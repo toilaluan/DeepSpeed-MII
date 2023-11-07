@@ -600,15 +600,19 @@ class RaggedBatchBase:
 
 
 class MIIPipeline(RaggedBatchBase):
-    def __call__(self, inputs: Union[str, List[str]], **kwargs) -> ResponseBatch:
+    def __call__(self, inputs: Union[str, List[str]], params: Union[dict, List[dict]], **kwargs) -> ResponseBatch:
         if isinstance(inputs, str):
             inputs = [inputs]
+        if isinstance(params, dict):
+            params = [params]
         outputs: ResponseBatch = ResponseBatch([])
         uids: List[int] = list(range(len(inputs)))
         flushed_uids: Set[int] = set()
 
-        for uid, input in zip(uids, inputs):
+        for uid, input, param in zip(uids, inputs, params):
+            print(param)
             request_kwargs = kwargs.copy()
+            request_kwargs.update(param)
             self._enqueue_request(uid, input, request_kwargs)
 
         while self.scheduled_requests:
